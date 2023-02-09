@@ -86,7 +86,6 @@ def wait_250(line):
 
 def wait_354(line):
     global graceful_exit
-    sys.stderr.write(line)
     if line[0:3] == "354":
         graceful_exit = True
         return True
