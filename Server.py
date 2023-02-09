@@ -5,7 +5,8 @@ from sys import stdin
 import os
 import socket
 from sys import argv
- 
+
+
 receivers = []
 seen = ""
 special = ["<", ">", "(", ")", "[", "]", "\\", ".", ",", ";", ":", "\"", "@"]
@@ -264,7 +265,7 @@ per = True
 sender = ""
 
 serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-hostname = socket.gethostname() + ".cs.unc.edu"
+hostname = socket.gethostname()
 port = int(argv[1])
 serverSock.bind(('', port))
 serverSock.listen(1)
@@ -274,21 +275,21 @@ while(True):
     connSock, addr = serverSock.accept()
 
     send_msg = "220 " + hostname
+    connSock.send(send_msg.encode())
 
     recv_msg = connSock.recv(1024).decode()
 
     if recv_msg[0:5] == "HELO ":
-        clientHost = recv_msg[5:]
+        clientHost = recv_msg[5:-1]
         send_msg = "250 Hello " + clientHost + " pleased to meet you"
         connSock.send(send_msg.encode())
     else:
         send_msg = "221 " + hostname + " closing connection"
         connSock.send(send_msg.encode())
 
-    while recv_msg != "QUIT":
+    while recv_msg != "QUIT\n":
         recv_msg = connSock.recv(1024).decode()
         
-        stdin.write()
         if not check_valid_cmd(recv_msg) and state != "DATA":
             send_msg = "500 Syntax error: command unrecognized"
             connSock.send(send_msg.encode())
@@ -301,18 +302,18 @@ while(True):
 
         if(recv_msg[0:4] == "MAIL") and state != "DATA":
             if state != "":
-                recv_msg = "503 Bad sequence of commands"
+                send_msg = "503 Bad sequence of commands"
                 connSock.send(send_msg.encode())
                 state = ""
                 receivers = []
                 data_seen = ""
                 continue
             if mail_from(recv_msg) and state == "":
-                recv_msg = "250 OK"
+                send_msg = "250 OK"
                 connSock.send(send_msg.encode())
                 state = "mail"
             elif state != "":
-                recv_msg = "503 Bad sequence of commands"
+                send_msg = "503 Bad sequence of commands"
                 connSock.send(send_msg.encode())
                 state = ""
                 receivers = []
@@ -323,7 +324,7 @@ while(True):
                 data_seen = ""
         elif(recv_msg[0:4] == "RCPT") and state != "DATA":
             if state != "mail" and state != "rcpt":
-                recv_msg = "503 Bad sequence of commands"
+                send_msg = "503 Bad sequence of commands"
                 connSock.send(send_msg.encode())
                 state = ""
                 receivers = []
@@ -331,12 +332,12 @@ while(True):
                 continue
             if rcpt(recv_msg):
                 if state == "mail" or state == "rcpt":
-                    recv_msg = "250 OK"
+                    send_msg = "250 OK"
                     connSock.send(send_msg.encode())
                     ## add recipient to receivers list
                     state = "rcpt"
                 else:
-                    recv_msg = "503 Bad sequence of commands"
+                    send_msg = "503 Bad sequence of commands"
                     connSock.send(send_msg.encode())
                     state = ""
                     receivers = []
@@ -347,7 +348,7 @@ while(True):
                 data_seen = ""
         elif(recv_msg [0:4] == "DATA") and state != "DATA":
             if state != "rcpt":
-                recv_msg = "503 Bad sequence of commands"
+                send_msg = "503 Bad sequence of commands"
                 connSock.send(send_msg.encode())
                 state = ""
                 receivers = []
@@ -355,12 +356,12 @@ while(True):
                 continue
             if data(recv_msg):
                 if state == "rcpt":
-                    recv_msg = "354 Start mail input; end with <CRLF>.<CRLF>"
+                    send_msg = "354 Start mail input; end with <CRLF>.<CRLF>\n"
                     connSock.send(send_msg.encode())
                     state = "DATA"
                     per = False
                 else:
-                    recv_msg = "503 Bad sequence of commands"
+                    send_msg = "503 Bad sequence of commands"
                     connSock.send(send_msg.encode())
                     state = ""
                     receivers = []
@@ -371,15 +372,13 @@ while(True):
                 data_seen = ""
         else:
             if state == "DATA":
-                if recv_msg == ".\n":
+                if recv_msg.split("\n")[-2] == "." or recv_msg.split("\n")[-1] == ".":
                     per = True
-                    recv_msg = "250 OK"
+                    send_msg = "250 OK"
                     connSock.send(send_msg.encode())
+                    data_seen += ("\n").join(recv_msg.split("\n")[:-2])
                     for add in receivers:
                         file = open("forward/" + add, "a+")
-                        file.write("From: " + sender + "\n")
-                        for rep in receivers:
-                            file.write("To: <" + rep + ">\n")
                         file.write(data_seen)
                         file.close()
 
@@ -389,13 +388,12 @@ while(True):
                 else:
                     data_seen += recv_msg
             else:
-                recv_msg = "500 Syntax error: command unrecognized"
+                send_msg = "500 Syntax error: command unrecognized"
                 connSock.send(send_msg.encode())
                 state = ""
                 data_seen = ""
                 receivers = []
-
-        if state == "DATA" and not per:
-            recv_msg = "501 Syntax error in parameters or arguments"
-            connSock.send(send_msg.encode())
+    
+    send_msg = "221 " + hostname + " closing connection"
+    connSock.send(send_msg.encode())
     connSock.close()

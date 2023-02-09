@@ -2,76 +2,180 @@
 #All code in this file has been written solely by myself, Joseph Kalbas
 
 import sys
+import socket
 
-file_path = sys.argv[1]
+hostname = sys.argv[1]
+port = int(sys.argv[2])
 
-read_file = open(file_path, 'r')
+seen = ""
+special = ["<", ">", "(", ")", "[", "]", "\\", ".", ",", ";", ":", "\"", "@"]
+space = [" ", "\t"]
+
+def local_part(line):
+    global seen
+    if seen != "":
+        copy_line = line.split(seen)[1]
+    else:
+        copy_line = line
+    count = 0
+    for sp in line:
+        if sp in special or sp in space:
+            if count == 0:
+                print("ERROR -- string")
+                return False
+            return True
+        else:
+            count+=1
+            seen += sp
+    return True
+
+def domain(line):
+    global seen
+    line = line.split(seen)[1]
+    count = 0
+    run_count = 0
+    for sp in line:
+        if count == 0 and not sp.isalpha():
+            print("ERROR -- element")
+            return False
+        if sp == ".":
+            seen += sp
+            count = 0
+            run_count += 1
+            continue
+        if sp.isalpha() or sp.isdigit():
+            count += 1
+            run_count += 1
+            seen += sp
+        else:
+            break
+    if line[run_count-1] == ".":
+        print("ERROR -- element")
+        return False
+    return True
+
+def path(line):
+    global seen
+    seen = ""
+    if seen != "":
+        copy_line = line.split(seen)[1]
+    else:
+        copy_line = line
+    if not local_part(line):
+        return False
+    copy_line = line.split(seen)[1]
+    if(copy_line == "" or copy_line[0] != "@"):
+        print("ERROR -- mailbox")
+        return False
+    
+    seen += "@"
+
+    if not domain(line):
+        return False
+    return True
+
 graceful_exit = False
 
-def wait_250():
+def wait_250(line):
     global graceful_exit
-    for line in sys.stdin:
-        sys.stderr.write(line)
-        if line[0:3] == "250":
-            graceful_exit = True
-            return True
-        else:
-            return False
+    if line[0:3] == "250":
+        graceful_exit = True
+        return True
+    else:
+        return False
 
-def wait_354():
+def wait_354(line):
     global graceful_exit
-    for line in sys.stdin:
-        sys.stderr.write(line)
-        if line[0:3] == "354":
-            graceful_exit = True
-            return True
-        else:
-            return False
+    sys.stderr.write(line)
+    if line[0:3] == "354":
+        graceful_exit = True
+        return True
+    else:
+        return False
 
 def quit_prg():
-    sys.stdout.write("Quit\n")
+    global clientSock
+    send_msg = "QUIT\n"
+    clientSock.send(send_msg.encode())
+
+    recv_msg = clientSock.recv(1024).decode()
+    clientSock.close()
     exit(1)
 
 
 state = ""
-for line in read_file.readlines():
-    graceful_exit = False
 
-    if line[0:5] == "From:":
-        if state == "data": # last line was the end of a data cmd
-            sys.stdout.write(".\n")
-            if not wait_250():
-                quit_prg()
-        sys.stdout.write("MAIL FROM:" + line[5:])
-        state = "mail"
-    elif line[0:3] == "To:":
-        if state == "data": # last line was the end of a data cmd
-            sys.stdout.write(".\n")
-            if not wait_250(): 
-                quit_prg()
-        sys.stdout.write("RCPT TO:" + line[3:])
-        state = "rcpt"
-    elif state == "rcpt":
-        if state == "data": # last line was the end of a data cmd
-            sys.stdout.write(".\n")
-            if not wait_250():
-                quit_prg()
-        sys.stdout.write("DATA\n")
-        if not wait_354():
-            quit_prg()
-        state = "data"
+sys.stdout.write("From:\n")
+from_addr = sys.stdin.readline().strip()
+while not path(from_addr):
+    sys.stdout.write("From:\n")
+    from_addr = sys.stdin.readline().strip()
 
-    if state == "data":
-        sys.stdout.write(line)
-        continue
+sys.stdout.write("To:\n")
+to_addrs = sys.stdin.readline().strip().replace(" ", "").split(',')
+for addr in to_addrs:
+    if not path(addr):
+        sys.stdout.write("To:\n")
+        to_addrs = sys.stdin.readline().strip().replace(" ", "").split(',')
 
-    if not wait_250():
+sys.stdout.write("Subject:\n")
+subject = sys.stdin.readline()
+
+sys.stdout.write("Message:\n")
+msg = ""
+line = ""
+while line != ".\n":
+    line = sys.stdin.readline()
+    msg += line
+
+clientSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+clientSock.connect((hostname, port))
+send_msg = ""
+
+recv_msg = clientSock.recv(1024).decode()
+if recv_msg == "220 " + hostname:
+    send_msg = "HELO " + ('').join(socket.gethostname().split(".")[1:]) + "\n"
+    clientSock.send(send_msg.encode())
+else:
+    quit_prg()
+
+recv_msg = clientSock.recv(1024).decode()
+
+send_msg = "MAIL FROM: <" + from_addr + ">\n"
+clientSock.send(send_msg.encode())
+
+recv_msg = clientSock.recv(1024).decode()
+if not wait_250(recv_msg):
+    quit_prg()
+
+for addr in to_addrs:
+    send_msg = "RCPT TO: <" + addr + ">\n"
+    clientSock.send(send_msg.encode())
+    recv_msg = clientSock.recv(1024).decode()
+    if not wait_250(recv_msg):
         quit_prg()
 
-    if EOFError and not graceful_exit:
-        quit_prg()
+send_msg = "DATA\n"
+clientSock.send(send_msg.encode())
 
-if state == "data":
-    sys.stdout.write("\n.\n")
-    wait_250()
-sys.stdout.write("QUIT\n")
+recv_msg = clientSock.recv(1024).decode()
+if not wait_354(recv_msg):
+    quit_prg()
+
+send_msg = "From: <" + from_addr + ">\nTo: "
+for recpt in to_addrs:
+    temp_msg = "<" + recpt + ">, "
+    send_msg += temp_msg
+
+send_msg = send_msg[:-2]
+send_msg += "\nSubject: " + subject + "\n" + msg
+clientSock.send(send_msg.encode())
+recv_msg = clientSock.recv(1024)
+if not wait_250:
+    quit_prg()
+
+send_msg = "QUIT\n"
+clientSock.send(send_msg.encode())
+
+recv_msg = clientSock.recv(1024).decode()
+clientSock.close()
