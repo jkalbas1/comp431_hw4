@@ -172,7 +172,7 @@ send_msg += "\n--999888999\nContent-Transfer-Encoding: base64\nContent-Type: ima
 with open("IMG_1813.JPG", "rb") as img:
     encoded_img = base64.b64encode(img.read())
 
-send_msg += str(encoded_img) + "\n--999888999\n."
+send_msg += str(encoded_img.decode('ascii')) + "\n--999888999\n."
 clientSock.send(send_msg.encode())
 recv_msg = clientSock.recv(1024)
 if not wait_250:
