@@ -96,7 +96,6 @@ def quit_prg():
     global clientSock
     send_msg = "QUIT\n"
     clientSock.send(send_msg.encode())
-
     recv_msg = clientSock.recv(1024).decode()
     clientSock.close()
     exit(1)
@@ -132,12 +131,11 @@ clientSock.connect((hostname, port))
 send_msg = ""
 
 recv_msg = clientSock.recv(1024).decode()
-if recv_msg == "220 " + hostname:
+if recv_msg[0:3] == "220":
     send_msg = "HELO " + ('').join(socket.gethostname().split(".")[1:]) + "\n"
     clientSock.send(send_msg.encode())
 else:
     quit_prg()
-
 recv_msg = clientSock.recv(1024).decode()
 
 send_msg = "MAIL FROM: <" + from_addr + ">\n"
@@ -172,7 +170,6 @@ clientSock.send(send_msg.encode())
 recv_msg = clientSock.recv(1024)
 if not wait_250:
     quit_prg()
-
 send_msg = "QUIT\n"
 clientSock.send(send_msg.encode())
 
