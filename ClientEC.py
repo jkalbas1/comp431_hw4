@@ -168,11 +168,11 @@ for recpt in to_addrs:
 send_msg = send_msg[:-2]
 send_msg += "\nSubject: " + subject + "MIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=999888999\n\n--999888999\n" 
 send_msg += "Content-Transfer-Encoding: quoted-printable\nContent-Type: text/plain\n\n" + msg
-send_msg += "\n--999888999\nContent-Transfer-Encoding: base64\nContent-Type: image/jpeg\n\n"
+send_msg += "--999888999\nContent-Transfer-Encoding: base64\nContent-Type: image/jpeg\n\n"
 with open("IMG_1813.JPG", "rb") as img:
     encoded_img = base64.b64encode(img.read())
 
-send_msg += str(encoded_img.decode('ascii')) + "\n--999888999\n."
+send_msg += str(encoded_img.decode('ascii')) + "\n--999888999--\n."
 clientSock.send(send_msg.encode())
 recv_msg = clientSock.recv(1024)
 if not wait_250:
