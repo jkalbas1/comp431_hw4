@@ -48,7 +48,8 @@ def domain(line):
             run_count += 1
             seen += sp
         else:
-            break
+            print("ERROR -- element")
+            return False
     if line[run_count-1] == ".":
         print("ERROR -- element")
         return False
