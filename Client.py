@@ -35,7 +35,6 @@ def domain(line):
     count = 0
     run_count = 0
     for sp in line:
-        print(sp)
         if count == 0 and not sp.isalpha():
             print("ERROR -- element")
             return False
