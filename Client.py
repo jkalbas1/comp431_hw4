@@ -35,6 +35,7 @@ def domain(line):
     count = 0
     run_count = 0
     for sp in line:
+        print(sp)
         if count == 0 and not sp.isalpha():
             print("ERROR -- element")
             return False
@@ -96,7 +97,12 @@ def quit_prg():
     global clientSock
     send_msg = "QUIT\n"
     clientSock.send(send_msg.encode())
-    recv_msg = clientSock.recv(1024).decode()
+    try:
+        recv_msg = clientSock.recv(1024).decode()
+    except socket.error as e:
+        print("Read failure")
+        clientSock.close()
+        exit(1)
     clientSock.close()
     exit(1)
 
@@ -127,35 +133,89 @@ while line != ".\n":
     msg += line
 
 clientSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-clientSock.connect((hostname, port))
+try:
+    clientSock.connect((hostname, port))
+except socket.error as e:
+    print("Socket connect failure.")
+    clientSock.close()
+    exit(1)
 send_msg = ""
 
-recv_msg = clientSock.recv(1024).decode()
+try:
+    recv_msg = clientSock.recv(1024).decode()
+except socket.error as e:
+    print("Read failure")
+    clientSock.close()
+    exit(1)
+
 if recv_msg[0:3] == "220":
     send_msg = "HELO " + ('').join(socket.gethostname().split(".")[1:]) + "\n"
-    clientSock.send(send_msg.encode())
+    try:
+        clientSock.send(send_msg.encode())
+    except socket.error as e:
+        print("Send error")
+        clientSock.close()
+        exit(1)
 else:
     quit_prg()
-recv_msg = clientSock.recv(1024).decode()
+try:
+    recv_msg = clientSock.recv(1024).decode()
+except socket.error as e:
+    print("Read failure")
+    clientSock.close()
+    exit(1)
 
 send_msg = "MAIL FROM: <" + from_addr + ">\n"
-clientSock.send(send_msg.encode())
+try:
+    clientSock.send(send_msg.encode())
+except socket.error as e:
+    print("Send error")
+    clientSock.close()
+    exit(1)
 
-recv_msg = clientSock.recv(1024).decode()
+try:
+    recv_msg = clientSock.recv(1024).decode()
+except socket.error as e:
+    print("Read failure")
+    clientSock.close()
+    exit(1)
+
 if not wait_250(recv_msg):
     quit_prg()
 
 for addr in to_addrs:
     send_msg = "RCPT TO: <" + addr + ">\n"
-    clientSock.send(send_msg.encode())
-    recv_msg = clientSock.recv(1024).decode()
+    try:
+        clientSock.send(send_msg.encode())
+    except socket.error as e:
+        print("Send error")
+        clientSock.close()
+        exit(1)
+    try:
+        recv_msg = clientSock.recv(1024).decode()
+    except socket.error as e:
+        print("Read failure")
+        clientSock.close()
+        exit(1)
+
     if not wait_250(recv_msg):
         quit_prg()
 
 send_msg = "DATA\n"
-clientSock.send(send_msg.encode())
+try:
+    clientSock.send(send_msg.encode())
+except socket.error as e:
+    print("Send error")
+    clientSock.close()
+    exit(1)
 
-recv_msg = clientSock.recv(1024).decode()
+try:
+    recv_msg = clientSock.recv(1024).decode()
+except socket.error as e:
+    print("Read failure")
+    clientSock.close()
+    exit(1)
+
 if not wait_354(recv_msg):
     quit_prg()
 
@@ -166,12 +226,27 @@ for recpt in to_addrs:
 
 send_msg = send_msg[:-2]
 send_msg += "\nSubject: " + subject + "\n" + msg
-clientSock.send(send_msg.encode())
+try:
+    clientSock.send(send_msg.encode())
+except socket.error as e:
+    print("Send error")
+    clientSock.close()
+    exit(1)
 recv_msg = clientSock.recv(1024)
 if not wait_250:
     quit_prg()
 send_msg = "QUIT\n"
-clientSock.send(send_msg.encode())
+try:
+    clientSock.send(send_msg.encode())
+except socket.error as e:
+    print("Send error")
+    clientSock.close()
+    exit(1)
 
-recv_msg = clientSock.recv(1024).decode()
+try:
+    recv_msg = clientSock.recv(1024).decode()
+except socket.error as e:
+    print("Read failure")
+    clientSock.close()
+    exit(1)
 clientSock.close()
