@@ -284,6 +284,8 @@ except socket.error as e:
     print("Socket bind failure.")
     serverSock.close()
     exit(1)
+
+serverSock.settimeout(60)
 serverSock.listen(1)
 clientHost = ""
 
@@ -292,7 +294,8 @@ while(True):
         connSock, addr = serverSock.accept()
     except socket.error as e:
         print("Socket accept error")
-        continue
+        serverSock.close()
+        exit(1)
 
     send_msg = "220 " + hostname
     try:
