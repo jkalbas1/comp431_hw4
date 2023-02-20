@@ -332,22 +332,6 @@ while(True):
         if(recv_msg[0:4] == "QUIT"):
             break
 
-        if(recv_msg[0] == " " or recv_msg[0] == "\t"):
-            recv_msg = recv_msg.strip()
-            if not check_valid_cmd(recv_msg):
-                send_msg = "500 Syntax error: command unrecognized"
-            else:
-                send_msg = "501 Syntax error in parameters or arguments"
-            try:
-                connSock.send(send_msg.encode())
-            except socket.error as e:
-                print("Send error")
-                connSock.close()
-            state = ""
-            receivers = []
-            data_seen = ""
-            continue
-
         if not check_valid_cmd(recv_msg) and state != "DATA":
             send_msg = "500 Syntax error: command unrecognized"
             try:
