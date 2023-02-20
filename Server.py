@@ -80,17 +80,19 @@ def domain(line):
             send_msg = "501 Syntax error in parameters or arguments"
             connSock.send(send_msg.encode())
             return False
-        if sp == ".":
+        elif sp == ".":
             seen += sp
             rc_dom += sp
             count = 0
             run_count += 1
             continue
-        if sp.isalpha() or sp.isdigit():
+        elif sp.isalpha() or sp.isdigit():
             count += 1
             run_count += 1
             rc_dom += sp
             seen += sp
+        elif sp == ">":
+            return True
         else:
             send_msg = "501 Syntax error in parameters or arguments"
             connSock.send(send_msg.encode())
