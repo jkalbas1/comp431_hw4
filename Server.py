@@ -272,6 +272,7 @@ serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 hostname = socket.gethostname()
 port = int(argv[1])
 
+serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 try:
     serverSock.bind(('', port))
 except socket.error as e:
@@ -280,7 +281,6 @@ except socket.error as e:
     exit(1)
 serverSock.listen(1)
 clientHost = ""
-serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 
 while(True):
     try:
