@@ -270,7 +270,7 @@ port = int(argv[1])
 serverSock.bind(('', port))
 serverSock.listen(1)
 clientHost = ""
-serverSock.setsockopt(socket.SO_REUSEPORT)
+serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 
 while(True):
     connSock, addr = serverSock.accept()
