@@ -341,10 +341,10 @@ while(True):
             except socket.error as e:
                 print("Send error")
                 connSock.close()
-                state = ""
-                receivers = []
-                data_seen = ""
-                continue
+            state = ""
+            receivers = []
+            data_seen = ""
+            continue
 
         if not check_valid_cmd(recv_msg) and state != "DATA":
             send_msg = "500 Syntax error: command unrecognized"
