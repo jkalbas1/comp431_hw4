@@ -327,6 +327,8 @@ while(True):
             print("Read failure")
             connSock.close()
             exit(1)
+        if(recv_msg[0:4] == "QUIT"):
+            break
         
         if not check_valid_cmd(recv_msg) and state != "DATA":
             send_msg = "500 Syntax error: command unrecognized"
