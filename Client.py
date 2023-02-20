@@ -143,7 +143,6 @@ send_msg = ""
 
 try:
     recv_msg = clientSock.recv(1024).decode()
-    
 except socket.error as e:
     print("Read failure")
     clientSock.close()
@@ -161,7 +160,6 @@ else:
     quit_prg()
 try:
     recv_msg = clientSock.recv(1024).decode()
-    
 except socket.error as e:
     print("Read failure")
     clientSock.close()
@@ -177,8 +175,6 @@ except socket.error as e:
 
 try:
     recv_msg = clientSock.recv(1024).decode()
-    
-
 except socket.error as e:
     print("Read failure")
     clientSock.close()
@@ -197,8 +193,6 @@ for addr in to_addrs:
         exit(1)
     try:
         recv_msg = clientSock.recv(1024).decode()
-        
-
     except socket.error as e:
         print("Read failure")
         clientSock.close()
@@ -217,8 +211,6 @@ except socket.error as e:
 
 try:
     recv_msg = clientSock.recv(1024).decode()
-    
-
 except socket.error as e:
     print("Read failure")
     clientSock.close()
@@ -255,8 +247,6 @@ except socket.error as e:
 
 try:
     recv_msg = clientSock.recv(1024).decode()
-    
-
 except socket.error as e:
     print("Read failure")
     clientSock.close()
