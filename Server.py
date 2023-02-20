@@ -320,7 +320,7 @@ while(True):
             connSock.close()
             exit(1)
 
-    while recv_msg != "QUIT\n":
+    while recv_msg[0:4] != "QUIT":
         try:
             recv_msg = connSock.recv(1024).decode()
         except socket.error as e:
