@@ -127,6 +127,9 @@ while line != ".\n":
     msg += line
     line = sys.stdin.readline()
 
+sys.stdout.write("Attachment:\n")
+img_path = sys.stdin.readline().strip()
+
 clientSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientSock.connect((hostname, port))
 send_msg = ""
@@ -169,7 +172,7 @@ send_msg = send_msg[:-2]
 send_msg += "\nSubject: " + subject + "MIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=999888999\n\n--999888999\n" 
 send_msg += "Content-Transfer-Encoding: quoted-printable\nContent-Type: text/plain\n\n" + msg
 send_msg += "--999888999\nContent-Transfer-Encoding: base64\nContent-Type: image/jpeg\n\n"
-with open("IMG_1813.JPG", "rb") as img:
+with open(img_path, "rb") as img:
     encoded_img = base64.b64encode(img.read())
 
 send_msg += str(encoded_img.decode('ascii')) + "\n--999888999--\n.\n"
