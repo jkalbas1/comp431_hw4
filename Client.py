@@ -18,7 +18,7 @@ def local_part(line):
     else:
         copy_line = line
     count = 0
-    for sp in line:
+    for sp in copy_line:
         if sp in special or sp in space:
             if count == 0:
                 print("ERROR -- string")
@@ -28,6 +28,20 @@ def local_part(line):
             count+=1
             seen += sp
     return True
+
+def whitespace(line):
+    global seen
+    if seen != "":
+        line = line.split(seen)[1]
+    if(line == ""):
+        return True
+    if(line[0] != " " and line[0] != "\t"):
+        return False
+    for sp in line:
+        if sp == " " or sp == "\t":
+            seen += sp
+        else:
+            return True
 
 def domain(line):
     global seen
@@ -62,6 +76,7 @@ def path(line):
         copy_line = line.split(seen)[1]
     else:
         copy_line = line
+    whitespace(copy_line)
     if not local_part(line):
         return False
     copy_line = line.split(seen)[1]
@@ -116,11 +131,11 @@ while not path(from_addr):
     from_addr = sys.stdin.readline().strip()
 
 sys.stdout.write("To:\n")
-to_addrs = sys.stdin.readline().strip().replace(" ", "").split(',')
+to_addrs = sys.stdin.readline().strip().split(',')
 for addr in to_addrs:
     if not path(addr):
         sys.stdout.write("To:\n")
-        to_addrs = sys.stdin.readline().strip().replace(" ", "").split(',')
+        to_addrs = sys.stdin.readline().strip().split(',')
 
 sys.stdout.write("Subject:\n")
 subject = sys.stdin.readline()
