@@ -279,7 +279,7 @@ serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 hostname = socket.gethostname()
 port = int(argv[1])
 try:
-    serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 except socket.error as e:
     print("Socket sockopt failure.")
     serverSock.close()
