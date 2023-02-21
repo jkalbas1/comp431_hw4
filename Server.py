@@ -322,6 +322,10 @@ while(True):
         connSock.close()
         continue
 
+    if len(recv_msg) < 5:
+        connSock.close()
+        continue
+
     #check if msg received is HELO msg
     if recv_msg[0:5] == "HELO ":
         clientHost = recv_msg[5:-1]
@@ -342,7 +346,7 @@ while(True):
             connSock.close()
             continue
 
-    while recv_msg[0:4] != "QUIT":
+    while recv_msg != "":
         try:
             recv_msg = connSock.recv(1024).decode()
         except socket.error as e:
@@ -350,7 +354,7 @@ while(True):
             break
         
         #connection is broken
-        if not recv_msg:
+        if not recv_msg or len(recv_msg) < 4:
             break
 
         if(recv_msg[0:4] == "QUIT"):
@@ -515,7 +519,9 @@ while(True):
                 state = ""
                 data_seen = ""
                 receivers = []
-    
+    if len(recv_msg) < 4:
+        connSock.close()
+        continue
     if recv_msg[0:4] != "QUIT":
         connSock.close()
         continue
