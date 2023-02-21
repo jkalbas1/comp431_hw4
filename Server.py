@@ -291,7 +291,7 @@ except socket.error as e:
     serverSock.close()
     exit(1)
 
-serverSock.listen(21)
+serverSock.listen(1)
 clientHost = ""
 
 while(True):
@@ -346,7 +346,7 @@ while(True):
             connSock.close()
             continue
 
-    while recv_msg != "":
+    while True:
         try:
             recv_msg = connSock.recv(1024).decode()
         except socket.error as e:
