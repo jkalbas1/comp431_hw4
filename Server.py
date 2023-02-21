@@ -6,6 +6,11 @@ import os
 import socket
 from sys import argv
 
+path = argv[0].split("Server.py")
+if len(path) > 0:
+    path = path[0]
+else:
+    path = ""
 
 receivers = []
 seen = ""
@@ -485,7 +490,7 @@ while(True):
                         break
                     data_seen += ("\n").join(recv_msg.split("\n")[:-2])
                     for add in receivers:
-                        file = open("forward/" + add, "a+")
+                        file = open(path + "forward/" + add, "a+")
                         file.write(data_seen)
                         file.close()
 
