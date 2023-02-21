@@ -274,7 +274,7 @@ serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 hostname = socket.gethostname()
 port = int(argv[1])
 try:
-    serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 except socket.error as e:
     print("Socket sockopt failure.")
     serverSock.close()
@@ -290,17 +290,18 @@ serverSock.listen(21)
 clientHost = ""
 
 while(True):
-    state = ""
+    state = "" #keep track of state machine
     receivers = []
     data_seen = ""
 
-    try:
+    try: #accept connection
         connSock, addr = serverSock.accept()
     except socket.error as e:
         print("Socket accept error")
         serverSock.close()
         continue
 
+    #send 220 hostname msg
     send_msg = "220 " + hostname
     try:
         connSock.send(send_msg.encode())
@@ -316,6 +317,7 @@ while(True):
         connSock.close()
         continue
 
+    #check if msg received is HELO msg
     if recv_msg[0:5] == "HELO ":
         clientHost = recv_msg[5:-1]
         send_msg = "250 Hello " + clientHost + " pleased to meet you"
@@ -329,6 +331,7 @@ while(True):
         send_msg = "221 " + hostname + " closing connection"
         try:
             connSock.send(send_msg.encode())
+            continue
         except socket.error as e:
             print("Send error")
             connSock.close()
@@ -340,9 +343,15 @@ while(True):
         except socket.error as e:
             print("Read failure")
             break
+        
+        #connection is broken
+        if not recv_msg:
+            break
+
         if(recv_msg[0:4] == "QUIT"):
             break
 
+        #check for valid command
         if not check_valid_cmd(recv_msg) and state != "DATA":
             send_msg = "500 Syntax error: command unrecognized"
             try:
@@ -357,7 +366,7 @@ while(True):
         
         seen = ""
 
-        if(recv_msg[0:4] == "MAIL") and state != "DATA":
+        if(recv_msg[0:4] == "MAIL") and state != "DATA": #MAIL cmd
             if state != "":
                 send_msg = "503 Bad sequence of commands"
                 try:
@@ -369,7 +378,7 @@ while(True):
                 receivers = []
                 data_seen = ""
                 continue
-            if mail_from(recv_msg) and state == "":
+            if mail_from(recv_msg) and state == "": #valid mail to msg
                 send_msg = "250 OK"
                 try:
                     connSock.send(send_msg.encode())
@@ -391,7 +400,7 @@ while(True):
                 state = ""
                 receivers = []
                 data_seen = ""
-        elif(recv_msg[0:4] == "RCPT") and state != "DATA":
+        elif(recv_msg[0:4] == "RCPT") and state != "DATA": #RCPT TO cmd
             if state != "mail" and state != "rcpt":
                 send_msg = "503 Bad sequence of commands"
                 try:
@@ -411,7 +420,6 @@ while(True):
                     except socket.error as e:
                         print("Send error")
                         break
-                    ## add recipient to receivers list
                     state = "rcpt"
                 else:
                     send_msg = "503 Bad sequence of commands"
@@ -427,7 +435,7 @@ while(True):
                 state = ""
                 receivers = []
                 data_seen = ""
-        elif(recv_msg [0:4] == "DATA") and state != "DATA":
+        elif(recv_msg [0:4] == "DATA") and state != "DATA": #DATA cmd
             if state != "rcpt":
                 send_msg = "503 Bad sequence of commands"
                 try:
