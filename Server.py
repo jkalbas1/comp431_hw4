@@ -6,11 +6,11 @@ import os
 import socket
 from sys import argv
 
-path = argv[0].split("Server.py")
-if len(path) > 0:
-    path = path[0]
+forward_path = argv[0].split("Server.py")
+if len(forward_path) > 0:
+    forward_path = forward_path[0]
 else:
-    path = ""
+    forward_path = ""
 
 receivers = []
 seen = ""
