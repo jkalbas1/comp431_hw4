@@ -26,6 +26,8 @@ def mail_token(line):
 def whitespace(line):
     global seen
     line = line.split(seen)[1]
+    if(line == ""):
+        return True
     if(line[0] != " " and line[0] != "\t"):
         return False
     for sp in line:
@@ -92,6 +94,7 @@ def domain(line):
             rc_dom += sp
             seen += sp
         elif sp == ">":
+            seen += sp
             return True
         else:
             send_msg = "501 Syntax error in parameters or arguments"
@@ -131,11 +134,10 @@ def path(line):
         return False
 
     copy_line = line.split(seen)[1]
-    if copy_line[0] != ">":
+    if seen[-1] != ">":
         send_msg = "501 Syntax error in parameters or arguments"
         connSock.send(send_msg.encode())
         return False
-    seen += ">"
     return True
 
 def crlf(line):
