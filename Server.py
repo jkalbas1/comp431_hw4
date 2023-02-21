@@ -490,7 +490,7 @@ while(True):
                         break
                     data_seen += ("\n").join(recv_msg.split("\n")[:-2])
                     for add in receivers:
-                        file = open(path + "forward/" + add, "a+")
+                        file = open(forward_path + "forward/" + add, "a+")
                         file.write(data_seen)
                         file.close()
 
