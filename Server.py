@@ -490,7 +490,12 @@ while(True):
                         break
                     data_seen += ("\n").join(recv_msg.split("\n")[:-2])
                     for add in receivers:
-                        file = open(forward_path + "forward/" + add, "a+")
+                        try:
+                            file = open(forward_path + "forward/" + add, "a+")
+                        except IOError:
+                            print("Cannot open file")
+                            connSock.close()
+                            break
                         file.write(data_seen)
                         file.close()
 
