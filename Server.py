@@ -287,7 +287,7 @@ except socket.error as e:
     exit(1)
 
 serverSock.settimeout(60)
-serverSock.listen(12)
+serverSock.listen(21)
 clientHost = ""
 
 while(True):
