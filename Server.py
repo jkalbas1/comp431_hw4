@@ -297,7 +297,7 @@ while(True):
     except socket.error as e:
         print("Socket accept error")
         serverSock.close()
-        exit(1)
+        continue
 
     send_msg = "220 " + hostname
     try:
@@ -305,14 +305,14 @@ while(True):
     except socket.error as e:
         print("Send error")
         connSock.close()
-        exit(1)
+        continue
 
     try:
         recv_msg = connSock.recv(1024).decode()
     except socket.error as e:
         print("Read failure")
         connSock.close()
-        exit(1)
+        continue
 
     if recv_msg[0:5] == "HELO ":
         clientHost = recv_msg[5:-1]
@@ -322,7 +322,7 @@ while(True):
         except socket.error as e:
             print("Send error")
             connSock.close()
-            exit(1)
+            continue
     else:
         send_msg = "221 " + hostname + " closing connection"
         try:
@@ -330,7 +330,7 @@ while(True):
         except socket.error as e:
             print("Send error")
             connSock.close()
-            exit(1)
+            continue
 
     while recv_msg[0:4] != "QUIT":
         try:
@@ -338,7 +338,7 @@ while(True):
         except socket.error as e:
             print("Read failure")
             connSock.close()
-            exit(1)
+            continue
         if(recv_msg[0:4] == "QUIT"):
             break
 
@@ -349,7 +349,7 @@ while(True):
             except socket.error as e:
                 print("Send error")
                 connSock.close()
-                exit(1)
+                continue
             state = ""
             receivers = []
             data_seen = ""
@@ -365,7 +365,7 @@ while(True):
                 except socket.error as e:
                     print("Send error")
                     connSock.close()
-                    exit(1)
+                    continue
                 state = ""
                 receivers = []
                 data_seen = ""
@@ -377,7 +377,7 @@ while(True):
                 except socket.error as e:
                     print("Send error")
                     connSock.close()
-                    exit(1)
+                    continue
                 state = "mail"
             elif state != "":
                 send_msg = "503 Bad sequence of commands"
@@ -386,7 +386,7 @@ while(True):
                 except socket.error as e:
                     print("Send error")
                     connSock.close()
-                    exit(1)
+                    continue
                 state = ""
                 receivers = []
                 data_seen = ""
@@ -402,7 +402,7 @@ while(True):
                 except socket.error as e:
                     print("Send error")
                     connSock.close()
-                    exit(1)
+                    continue
                 state = ""
                 receivers = []
                 data_seen = ""
@@ -415,7 +415,7 @@ while(True):
                     except socket.error as e:
                         print("Send error")
                         connSock.close()
-                        exit(1)
+                        continue
                     ## add recipient to receivers list
                     state = "rcpt"
                 else:
@@ -425,7 +425,7 @@ while(True):
                     except socket.error as e:
                         print("Send error")
                         connSock.close()
-                        exit(1)
+                        continue
                     state = ""
                     receivers = []
                     data_seen = ""
@@ -441,7 +441,7 @@ while(True):
                 except socket.error as e:
                     print("Send error")
                     connSock.close()
-                    exit(1)
+                    continue
                 state = ""
                 receivers = []
                 data_seen = ""
@@ -454,7 +454,7 @@ while(True):
                     except socket.error as e:
                         print("Send error")
                         connSock.close()
-                        exit(1)
+                        continue
                     state = "DATA"
                     per = False
                 else:
@@ -464,7 +464,7 @@ while(True):
                     except socket.error as e:
                         print("Send error")
                         connSock.close()
-                        exit(1)
+                        continue
                     state = ""
                     receivers = []
                     data_seen = ""
@@ -482,7 +482,7 @@ while(True):
                     except socket.error as e:
                         print("Send error")
                         connSock.close()
-                        exit(1)
+                        continue
                     data_seen += ("\n").join(recv_msg.split("\n")[:-2])
                     for add in receivers:
                         file = open("forward/" + add, "a+")
@@ -501,7 +501,7 @@ while(True):
                 except socket.error as e:
                     print("Send error")
                     connSock.close()
-                    exit(1)
+                    continue
                 state = ""
                 data_seen = ""
                 receivers = []
@@ -512,5 +512,5 @@ while(True):
     except socket.error as e:
         print("Send error")
         connSock.close()
-        exit(1)
+        continue
     connSock.close()
