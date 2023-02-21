@@ -286,7 +286,6 @@ except socket.error as e:
     serverSock.close()
     exit(1)
 
-serverSock.settimeout(60)
 serverSock.listen(21)
 clientHost = ""
 

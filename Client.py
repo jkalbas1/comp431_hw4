@@ -120,22 +120,20 @@ def quit_prg():
         exit(1)
     clientSock.close()
     exit(1)
-
-
-state = ""
+    
 
 sys.stdout.write("From:\n")
 from_addr = sys.stdin.readline().strip()
-while not path(from_addr):
-    sys.stdout.write("From:\n")
-    from_addr = sys.stdin.readline().strip()
+# while not path(from_addr):
+#     sys.stdout.write("From:\n")
+#     from_addr = sys.stdin.readline().strip()
 
 sys.stdout.write("To:\n")
 to_addrs = sys.stdin.readline().strip().split(',')
-for addr in to_addrs:
-    if not path(addr):
-        sys.stdout.write("To:\n")
-        to_addrs = sys.stdin.readline().strip().split(',')
+# for addr in to_addrs:
+#     if not path(addr):
+#         sys.stdout.write("To:\n")
+#         to_addrs = sys.stdin.readline().strip().split(',')
 
 sys.stdout.write("Subject:\n")
 subject = sys.stdin.readline()
