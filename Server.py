@@ -293,6 +293,7 @@ except socket.error as e:
 
 serverSock.listen(1)
 clientHost = ""
+recv_msg = ""
 
 while(True):
     state = "" #keep track of state machine
