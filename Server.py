@@ -274,7 +274,6 @@ serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 hostname = socket.gethostname()
 port = int(argv[1])
 try:
-    serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 except socket.error as e:
     print("Socket sockopt failure.")
@@ -288,7 +287,7 @@ except socket.error as e:
     exit(1)
 
 serverSock.settimeout(60)
-serverSock.listen(1)
+serverSock.listen(12)
 clientHost = ""
 
 while(True):
@@ -335,7 +334,7 @@ while(True):
             print("Send error")
             connSock.close()
             continue
-#####
+
     while recv_msg[0:4] != "QUIT":
         try:
             recv_msg = connSock.recv(1024).decode()
