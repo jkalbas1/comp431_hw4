@@ -210,16 +210,46 @@ except socket.error as e:
     clientSock.close()
     exit(1)
 
-for i, line in enumerate(recv_msg.splitlines()):
-    if i == len(to_addrs) + 1:
-        #DATA recognition is expected
-        if not wait_354:
-            quit_prg()
-    else:
-        if not wait_250:
-            quit_prg()
 
-
+if(len(recv_msg.splitlines()) > 1):
+    for i, line in enumerate(recv_msg.splitlines()):
+        if i == len(to_addrs) + 1:
+            #DATA recognition is expected
+            if not wait_354(line):
+                quit_prg()
+        else:
+            if not wait_250(line):
+                quit_prg()
+else:
+    for i in range(1 + len(to_addrs)):
+        try:
+            recv_msg = clientSock.recv(1024).decode()
+        except socket.error as e:
+            print("Read failure")
+            clientSock.close()
+            exit(1)
+        
+        if not wait_250(line):
+            quit_prg()
+    try:
+        recv_msg = clientSock.recv(1024).decode()
+    except socket.error as e:
+        print("Read failure")
+        clientSock.close()
+        exit(1)
+    
+    if not wait_354(line):
+        quit_prg()
+    
+    try:
+        recv_msg = clientSock.recv(1024).decode()
+    except socket.error as e:
+        print("Read failure")
+        clientSock.close()
+        exit(1)
+    
+    if not wait_250(line):
+        quit_prg()
 
 send_msg = "QUIT\n"
 try:
@@ -236,4 +266,5 @@ except socket.error as e:
     print("Read failure")
     clientSock.close()
     exit(1)
+
 clientSock.close()
