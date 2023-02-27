@@ -84,21 +84,26 @@ def domain(line):
     run_count = 0
     for sp in line:
         if count == 0 and not sp.isalpha():
-            print("501 Syntax error in parameters or arguments")
+            send_msg = "501 Syntax error in parameters or arguments\n"
+            connSock.send(send_msg.encode())
             return False
-        if sp == ".":
+        elif sp == ".":
             seen += sp
             rc_dom += sp
             count = 0
             run_count += 1
             continue
-        if sp.isalpha() or sp.isdigit():
+        elif sp.isalpha() or sp.isdigit():
             count += 1
             run_count += 1
             rc_dom += sp
             seen += sp
-        else:
+        elif sp == ">":
             break
+        else:
+            send_msg = "501 Syntax error in parameters or arguments\n"
+            connSock.send(send_msg.encode())
+            return False
     if line[run_count-1] == ".":
         send_msg = "501 Syntax error in parameters or arguments\n"
         connSock.send(send_msg.encode())
@@ -308,7 +313,7 @@ while(True):
         continue
 
     try:
-        recv_msg = connSock.recv(1024).decode()
+        recv_msg = connSock.recv(2048).decode()
     except socket.error as e:
         print("Read failure")
         connSock.close()
@@ -340,7 +345,7 @@ while(True):
 
     while True:
         try:
-            recv_msg = connSock.recv(1024).decode()
+            recv_msg = connSock.recv(2048).decode()
         except socket.error as e:
             print("Read failure")
             break

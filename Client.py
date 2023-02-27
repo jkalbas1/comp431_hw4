@@ -113,7 +113,7 @@ def quit_prg():
     send_msg = "QUIT\n"
     clientSock.send(send_msg.encode())
     try:
-        recv_msg = clientSock.recv(1024).decode()
+        recv_msg = clientSock.recv(2048).decode()
     except socket.error as e:
         print("Read failure")
         clientSock.close()
@@ -157,7 +157,7 @@ except socket.error as e:
 send_msg = ""
 
 try:
-    recv_msg = clientSock.recv(1024).decode()
+    recv_msg = clientSock.recv(2048).decode()
 except socket.error as e:
     print("Read failure")
     clientSock.close()
@@ -174,7 +174,7 @@ if recv_msg[0:3] == "220":
 else:
     quit_prg()
 try:
-    recv_msg = clientSock.recv(1024).decode()
+    recv_msg = clientSock.recv(2048).decode()
 except socket.error as e:
     print("Read failure")
     clientSock.close()
@@ -204,7 +204,7 @@ except socket.error as e:
 
 
 try:
-    recv_msg = clientSock.recv(1024).decode()
+    recv_msg = clientSock.recv(2048).decode()
 except socket.error as e:
     print("Read failure")
     clientSock.close()
@@ -223,7 +223,7 @@ if(len(recv_msg.splitlines()) > 1):
 else:
     for i in range(1 + len(to_addrs)):
         try:
-            recv_msg = clientSock.recv(1024).decode()
+            recv_msg = clientSock.recv(2048).decode()
         except socket.error as e:
             print("Read failure")
             clientSock.close()
@@ -232,7 +232,7 @@ else:
         if not wait_250(line):
             quit_prg()
     try:
-        recv_msg = clientSock.recv(1024).decode()
+        recv_msg = clientSock.recv(2048).decode()
     except socket.error as e:
         print("Read failure")
         clientSock.close()
@@ -242,7 +242,7 @@ else:
         quit_prg()
     
     try:
-        recv_msg = clientSock.recv(1024).decode()
+        recv_msg = clientSock.recv(2048).decode()
     except socket.error as e:
         print("Read failure")
         clientSock.close()
@@ -261,7 +261,7 @@ except socket.error as e:
 
 #221 command
 try:
-    recv_msg = clientSock.recv(1024).decode()
+    recv_msg = clientSock.recv(2048).decode()
 except socket.error as e:
     print("Read failure")
     clientSock.close()
