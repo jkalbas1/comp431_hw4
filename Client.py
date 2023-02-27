@@ -131,11 +131,11 @@ while not path(from_addr):
     from_addr = sys.stdin.readline().strip()
 
 sys.stdout.write("To:\n")
-to_addrs = sys.stdin.readline().strip().split(',')
+to_addrs = sys.stdin.readline().strip().replace(" ", "").split(',')
 for addr in to_addrs:
     if not path(addr):
         sys.stdout.write("To:\n")
-        to_addrs = sys.stdin.readline().strip().split(',')
+        to_addrs = sys.stdin.readline().strip().replace(" ", "").split(',')
 
 sys.stdout.write("Subject:\n")
 subject = sys.stdin.readline()
@@ -181,77 +181,46 @@ except socket.error as e:
     exit(1)
 
 send_msg = "MAIL FROM: <" + from_addr + ">\n"
-try:
-    clientSock.send(send_msg.encode())
-except socket.error as e:
-    print("Send error")
-    clientSock.close()
-    exit(1)
-
-try:
-    recv_msg = clientSock.recv(1024).decode()
-except socket.error as e:
-    print("Read failure")
-    clientSock.close()
-    exit(1)
-
-if not wait_250(recv_msg):
-    quit_prg()
 
 for addr in to_addrs:
-    send_msg = "RCPT TO: <" + addr + ">\n"
-    try:
-        clientSock.send(send_msg.encode())
-    except socket.error as e:
-        print("Send error")
-        clientSock.close()
-        exit(1)
-    try:
-        recv_msg = clientSock.recv(1024).decode()
-    except socket.error as e:
-        print("Read failure")
-        clientSock.close()
-        exit(1)
+    send_msg += "RCPT TO: <" + addr + ">\n"
 
-    if not wait_250(recv_msg):
-        quit_prg()
+send_msg += "DATA\n"
 
-send_msg = "DATA\n"
-try:
-    clientSock.send(send_msg.encode())
-except socket.error as e:
-    print("Send error")
-    clientSock.close()
-    exit(1)
-
-try:
-    recv_msg = clientSock.recv(1024).decode()
-except socket.error as e:
-    print("Read failure")
-    clientSock.close()
-    exit(1)
-
-if not wait_354(recv_msg):
-    quit_prg()
-
-send_msg = "From: <" + from_addr + ">\nTo: "
+send_msg += "From: <" + from_addr + ">\nTo: "
 for recpt in to_addrs:
     temp_msg = "<" + recpt + ">, "
     send_msg += temp_msg
 
 send_msg = send_msg[:-2]
 send_msg += "\nSubject: " + subject + "\n" + msg
+
 try:
     clientSock.send(send_msg.encode())
 except socket.error as e:
     print("Send error")
     clientSock.close()
     exit(1)
-recv_msg = clientSock.recv(1024)
 
 
-if not wait_250:
-    quit_prg()
+try:
+    recv_msg = clientSock.recv(1024).decode()
+except socket.error as e:
+    print("Read failure")
+    clientSock.close()
+    exit(1)
+
+for i, line in enumerate(recv_msg.splitlines()):
+    if i == len(to_addrs) + 1:
+        #DATA recognition is expected
+        if not wait_354:
+            quit_prg()
+    else:
+        if not wait_250:
+            quit_prg()
+
+
+
 send_msg = "QUIT\n"
 try:
     clientSock.send(send_msg.encode())
@@ -260,6 +229,7 @@ except socket.error as e:
     clientSock.close()
     exit(1)
 
+#221 command
 try:
     recv_msg = clientSock.recv(1024).decode()
 except socket.error as e:
